@@ -1,0 +1,1 @@
+This goal of this repository is to provide python bindings for the Tobii EyeX API.  These programs will demonstrate the most basic ability of the Tobii EyeX Engine with Python.
