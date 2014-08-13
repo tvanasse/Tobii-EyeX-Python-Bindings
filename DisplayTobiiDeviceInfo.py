@@ -1,7 +1,8 @@
+import os
 from ctypes import *
 from tobiilib import struct
 
-tobiiGazeCore64 = WinDLL('Z:\\Documents\\Tobii Project\\Python_tobii\\tobiilib\\TobiiGazeCore64.dll');
+tobiiGazeCore64 = WinDLL(os.getcwd() + '\\tobiilib\\TobiiGazeCore64.dll');
 tobiiGazeCore64.tobiigaze_get_connected_eye_tracker(struct.url, struct.URLsize, None)
 eye_tracker = c_void_p(tobiiGazeCore64.tobiigaze_create(struct.url, None))
 info = struct.tobii_device_info()
