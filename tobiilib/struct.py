@@ -1,80 +1,10 @@
 from __future__ import print_function
 from ctypes import *
 import array 
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-
-
-URLsize = c_uint32(256);
-url = create_string_buffer(256);
-errcode = c_uint32()
-
-class tobii_device_info(Structure):
-    _fields_ =[("serial_number", c_char * 128), ("model", c_char * 64),
-               ("generation", c_char * 64), ("firmware_version", c_char * 128)]
-
-#Data structure for Async Minmal Eye Tracking
-    
-class LIST_ENTRY(Structure):
-    pass
-LIST_ENTRY._fields_ = [
-        ("Flink",   c_void_p),     # POINTER(LIST_ENTRY)
-        ("Blink",   c_void_p),     # POINTER(LIST_ENTRY)
-]
-
-class RTL_CRITICAL_SECTION(Structure):
-    _pack_ = 1
-class RTL_CRITICAL_SECTION_DEBUG(Structure):
-    _pack_ = 1
-##PRTL_CRITICAL_SECTION       = POINTER(RTL_CRITICAL_SECTION)
-##PRTL_CRITICAL_SECTION_DEBUG = POINTER(RTL_CRITICAL_SECTION_DEBUG)
-PRTL_CRITICAL_SECTION       = c_void_p
-PRTL_CRITICAL_SECTION_DEBUG = c_void_p
-RTL_CRITICAL_SECTION._fields_ = [
-        ("DebugInfo",       PRTL_CRITICAL_SECTION_DEBUG),
-        ("LockCount",       c_long),
-        ("RecursionCount",  c_long),
-        ("OwningThread",    c_void_p),
-        ("LockSemaphore",   c_void_p),
-        ("SpinCount",       POINTER(c_long)),
-]
-RTL_CRITICAL_SECTION_DEBUG._fields_ = [
-        ("Type",                        c_ushort),
-        ("CreatorBackTraceIndex",       c_ushort),
-        ("CriticalSection",             PRTL_CRITICAL_SECTION),
-        ("ProcessLocksList",            LIST_ENTRY),
-        ("EntryCount",                  c_ulong),
-        ("ContentionCount",             c_ulong),
-        ("Flags",                       c_ulong),
-        ("CreatorBackTraceIndexHigh",   c_ushort),
-        ("SpareUSHORT",                 c_ushort),
-]
-
-class xcondition_variable(Structure):
-    _fields_ = [
-                ("cs", RTL_CRITICAL_SECTION),
-                ("cv", c_void_p),
-                ("ready", c_int)
-                ]
-
-
-##class _RTL_CRITICAL_SECTION(Structure):
-##    _fields_ = [("LockCount", c_long), ("RecursionCount", c_long), 
-##                ("OwningThread", c_void_p), ("LockSemaphore", c_void_p),
-##                ("SpinCount", POINTER(c_long), ("DebugInfo", PRTL_CRITICAL_SECTION_DEBUG)) ]
-##
-##class _RFL_CRITICAL_SECTION_DEBUG:
-##    _fields_ = [("Type", c_ushort), ("CreatorBackTraceIndex", c_ushort),
-##                ("ProcessLocksList", )
-##                
-##class _RTL_CRITICAL_SECTION_DEBUG:
-##    _fields_ = [("Type", c_ushort), ("CreatorBackTraceIndex", c_ushort),
-##                ("CriticalSection", POINTER(_RTL_CRITICAL_SECTION)), ("EntryCount", c_ulong), ("ContentionCount", c_ulong]
-##                ("Flags", c_ulong), ("CreatorBackTraceIndexHigh", c_ushort), ("SpareWORD", c_ushort)]
-
-
-#Data structures to pass to on_gaze_data
 TOBIIGAZE_TRACKING_STATUS_NO_EYES_TRACKED = 0
 TOBIIGAZE_TRACKING_STATUS_BOTH_EYES_TRACKED = 1
 TOBIIGAZE_TRACKING_STATUS_ONLY_LEFT_EYE_TRACKED = 2
@@ -84,36 +14,40 @@ TOBIIGAZE_TRACKING_STATUS_ONE_EYE_TRACKED_PROBABLY_RIGHT = 5
 TOBIIGAZE_TRACKING_STATUS_ONLY_RIGHT_EYE_TRACKED = 6
 TOBIIGAZE_MAX_GAZE_DATA_EXTENSIONS = 32
 
-class tobiigaze_point_3d(Structure):
+URLsize = c_uint32(256);
+url = create_string_buffer(256);
+errcode = c_uint32()
+
+
+class TobiiDeviceInfo(Structure):
+    
+    
+    _fields_ =[("serial_number", c_char * 128), ("model", c_char * 64),
+               ("generation", c_char * 64), ("firmware_version", c_char * 128)]
+class TobiigazePoint3d(Structure):
     _fields_ = [("x", c_double), ("y", c_double), ("z", c_double)]
 
-class tobiigaze_point_2d(Structure):
+class TobiigazePoint2d(Structure):
     _fields_ = [("x", c_double), ("y", c_double)]
 
-class tobiigaze_gaze_data_eye(Structure):
-    _fields_ = [("eye_position_from_eye_tracker_mm", tobiigaze_point_3d),
-                ("eye_position_in_track_box_normalized", tobiigaze_point_3d),
-                ("gaze_point_from_eye_tracker_mm", tobiigaze_point_3d),
-                ("gaze_point_on_display_normalized", tobiigaze_point_2d)]
+class TobiiGazeDataEye(Structure):
+    _fields_ = [("eye_position_from_eye_tracker_mm", TobiigazePoint3d),
+                ("eye_position_in_track_box_normalized", TobiigazePoint3d),
+                ("gaze_point_from_eye_tracker_mm", TobiigazePoint3d),
+                ("gaze_point_on_display_normalized", TobiigazePoint3d)]
     
-class tobiigaze_gaze_data(Structure):
+class TobiiGazeData(Structure):
     _fields_ = [("timestamp", c_uint64), ("tracking_status", c_uint),
-                ("left", tobiigaze_gaze_data_eye), ("right", tobiigaze_gaze_data_eye)]
+                ("left", TobiiGazeDataEye), 
+                ("right", TobiiGazeDataEye)]
 
-class tobiigaze_gaze_data_extension(Structure):
-    _fields_ = [("column_id", c_uint32), ("data", c_uint8 * 256), ("actual_size", c_uint32)]
-
-
-class tobiigaze_gaze_data_extensions(Structure):
-    _fields_ = [("extensions", tobiigaze_gaze_data_extension * TOBIIGAZE_MAX_GAZE_DATA_EXTENSIONS), ("actual_size", c_uint32)]
+class TobiiGazeDataExtension(Structure):
+    _fields_ = [("column_id", c_uint32), ("data", c_uint8 * 256), 
+                ("actual_size", c_uint32)]
 
 
-#My own created sctructures
-user_data = c_void_p()
-tobiigaze_gaze_data_ref = byref(tobiigaze_gaze_data())
-tobiigaze_gaze_data_extensions_ref = byref(tobiigaze_gaze_data_extensions())
-eye_data_left = []
-eye_data_right = []
+class TobiiGazeDataExtensions(Structure):
+    _fields_ = [("extensions", TobiiGazeDataExtension * TOBIIGAZE_MAX_GAZE_DATA_EXTENSIONS), ("actual_size", c_uint32)]
 
 def on_gaze_data(tobiigaze_gaze_data_ref, tobiigaze_gaze_data_extensions_ref, user_data):
     gazedata = tobiigaze_gaze_data_ref.contents
@@ -124,8 +58,10 @@ def on_gaze_data(tobiigaze_gaze_data_ref, tobiigaze_gaze_data_extensions_ref, us
     if (gazedata.tracking_status == TOBIIGAZE_TRACKING_STATUS_BOTH_EYES_TRACKED or
         gazedata.tracking_status == TOBIIGAZE_TRACKING_STATUS_ONLY_LEFT_EYE_TRACKED or
         gazedata.tracking_status == TOBIIGAZE_TRACKING_STATUS_ONE_EYE_TRACKED_PROBABLY_LEFT):
-        print("[ %7.4f , %7.4f ] " % (gazedata.left.gaze_point_on_display_normalized.x, gazedata.left.gaze_point_on_display_normalized.y), end="")
+        print("[ %7.4f , %7.4f ] " % (gazedata.left.gaze_point_on_display_normalized.x, 
+              gazedata.left.gaze_point_on_display_normalized.y), end="")
         lefteye = "[ %7.4f , %7.4f ] " % (gazedata.left.gaze_point_on_display_normalized.x, gazedata.left.gaze_point_on_display_normalized.y) 
+        
         eye_data_left.append(lefteye)
     
     else:
@@ -151,6 +87,65 @@ def on_gaze_data(tobiigaze_gaze_data_ref, tobiigaze_gaze_data_extensions_ref, us
     print("")
     return 0
     
+#Data structures to pass to on_gaze_data
+
+tobiiGazeCore64 = WinDLL(os.getcwd() + '\\tobiilib\\TobiiGazeCore64.dll');
+tobiiGazeCore64.tobiigaze_get_connected_eye_tracker(url, URLsize, 
+                                                    None)    
+eye_tracker = c_void_p(tobiiGazeCore64.tobiigaze_create(url, None))
+info = TobiiDeviceInfo()
+tobiiGazeCore64.tobiigaze_run_event_loop_on_internal_thread(eye_tracker, 
+                                                                None, 
+                                                                None)
+tobiiGazeCore64.tobiigaze_connect(eye_tracker, byref(errcode))  
+
+print("Connect status: %s" % errcode) 
+tobiiGazeCore64.tobiigaze_get_device_info(eye_tracker, byref(info), 
+                                          byref(errcode));
+
+tobiigaze_gaze_data_ref = byref(TobiiGazeData())
+
+tobiigaze_gaze_data_extensions_ref= byref(TobiiGazeDataExtensions())
+
+callback_type = WINFUNCTYPE(c_int, POINTER(TobiiGazeData), 
+                            POINTER(TobiiGazeDataExtensions),
+                            c_void_p)
+
+tobiigaze_start_tracking = tobiiGazeCore64.tobiigaze_start_tracking
+
+tobiigaze_start_tracking.restype = None
+
+tobiigaze_start_tracking.argtypes = (c_void_p, callback_type, 
+                                     c_void_p, c_void_p) 
+on_gaze_data_func = callback_type(on_gaze_data)
+
+def start_tracking():
+    
+    
+    tobiigaze_start_tracking(eye_tracker, on_gaze_data_func, byref(errcode), 
+                         None)                                                        
+    
+
+def stop_tracking():
+    
+    tobiiGazeCore64.tobiigaze_stop_tracking(eye_tracker, byref(errcode))
+    tobiiGazeCore64.tobiigaze_disconnect(eye_tracker)
+    
+    
+
+
+
+
+
+
+#My own created sctructures
+user_data = c_void_p()
+tobiigaze_gaze_data_ref = byref(TobiiGazeData())
+TobiiGazeDataExtensions_ref = byref(TobiiGazeDataExtensions())
+eye_data_left = []
+eye_data_right = []
+
+
     
 def isfloat(value):
   try:
