@@ -1,6 +1,8 @@
+#!/usr/bin/env python
 import os
 from ctypes import *
-from tobiilib import struct
+
+from tobii_lib import struct
 
 tobiiGazeCore64 = WinDLL(os.getcwd() + '\\tobiilib\\TobiiGazeCore64.dll');
 tobiiGazeCore64.tobiigaze_get_connected_eye_tracker(struct.url, struct.URLsize, 
