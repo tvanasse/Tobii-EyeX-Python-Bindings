@@ -2,4 +2,4 @@ These programs work with the Tobii EyeX Eye Tracker. More information about the 
 
 
 
-This goal of this repository is to provide python bindings for the Tobii EyeX API.  These programs will demonstrate the most basic ability of the Tobii EyeX Engine with Python.
+The goal of this repository is to provide python bindings for the Tobii EyeX C/C++ API.  These programs demonstrate the most basic ability of the Tobii EyeX Engine with Python.
