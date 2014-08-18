@@ -2,7 +2,7 @@
 
 #############################################################################
 ##
-## Authors: Tom Vanasse and Nate Vacker
+## Authors: Tom Vanasse and Nate Vack
 ##
 ## This file provides the c_type python structures necessary to 
 ## run simple funtions with the Tobii Eyex Engine, as well as some basic
@@ -117,7 +117,7 @@ def on_gaze_data(tobiigaze_gaze_data_ref, tobiigaze_gaze_data_extensions_ref,
     return 0
     
 #Data structures to pass to on_gaze_data
-tobiiGazeCore64 = WinDLL(os.getcwd() + '\\tobiilib\\TobiiGazeCore64.dll');
+tobiiGazeCore64 = WinDLL(os.getcwd() + '\\tobii_lib\\TobiiGazeCore64.dll');
 tobiiGazeCore64.tobiigaze_get_connected_eye_tracker(url, URL_SIZE, 
                                                     None)    
 eye_tracker = c_void_p(tobiiGazeCore64.tobiigaze_create(url, None))

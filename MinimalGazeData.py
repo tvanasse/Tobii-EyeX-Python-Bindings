@@ -7,7 +7,7 @@ from tobii_lib import struct
 
 print(os.getcwd())
 
-tobiiGazeCore64 = WinDLL(os.getcwd() + '\\tobiilib\\TobiiGazeCore64.dll');
+tobiiGazeCore64 = WinDLL(os.getcwd() + '\\tobii_lib\\TobiiGazeCore64.dll');
 struct.start_tracking()
 
 #Specify desired time of Gaze Data here
